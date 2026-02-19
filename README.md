@@ -10,7 +10,7 @@
 
 1. python -m venv ./ 이후에 source bin/activate 작동.
 2. pip install -r requirements.txt
-3. pth.zip과 outdate.zip을 압축 풀어 넣기. (학습시 outdate.zip필요 실행만 해볼 요량이면 pth.zip만 압축 풀기)
+3. pth.zip과 outdate.zip을 압축 풀어 넣기. (학습시 outdate.zip필요 실행만 해볼 요량이면 pth.zip만 압축 풀기)  ( 다운로드 경로 https://drive.google.com/drive/folders/1jNeGA9nbLsa37PXgRcy-lhROPh58zOnp?usp=drive_link  )
 4. $ python mymain.py 실행(테스트시에 컴퓨터에 웹카메라등을 설치가 필요합니다) (학습시는 $ python mytrain.py 실행. pth폴더 안에 torch모델 파일이 저장됩니다. 이걸 이용해서 mymain.py안에 글자 수정이 필요합니다.)
 
 
