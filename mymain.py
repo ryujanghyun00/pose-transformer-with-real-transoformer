@@ -17,85 +17,6 @@ def get_keypoints(image_rgb):
     image_and_json=True,
     detect_resolution=512)
 
-    # error_pass = False
-    # pose_kpts = None
-    # hand_left = None
-    # hand_right =None
-    # face = None
-    # try:
-    #     if j['people'][1]:
-    #        pose_kpts = np.zeros((18, 3), dtype=np.float32)
-    #        hand_left = np.zeros((21, 3), dtype=np.float32)
-    #        hand_right = np.zeros((21, 3), dtype=np.float32)
-    #        face = np.zeros((70, 3), dtype=np.float32)
-    #        error_pass = True 
-    # except:
-    #     try:
-    #         pose_kpts = np.array(j['people'][0]['pose_keypoints_2d'])
-    #     except:
-    #         pass
-    #     if pose_kpts is None:
-    #         pose_kpts = np.zeros((18, 3), dtype=np.float32)
-    #         error_pass = True
-    #     elif pose_kpts.size == 18 * 3:
-    #         pose_kpts = pose_kpts.reshape(18, 3)
-    #     else:
-    #         pose_kpts = np.zeros((18, 3), dtype=np.float32)
-    #         error_pass = True
-        
-    #     try:
-    #         hand_left = np.array(j['people'][0]['hand_left_keypoints_2d'], dtype=np.float32)
-    #     except:
-    #         pass
-    #     if hand_left is None:
-    #         hand_left = np.zeros((21, 3), dtype=np.float32)
-    #     elif hand_left.size == 21 * 3:
-    #         hand_left = hand_left.reshape(21, 3)
-    #     else:
-    #         hand_left = np.zeros((21, 3), dtype=np.float32)
-        
-    #     try:
-    #         hand_right = np.array(j['people'][0]['hand_right_keypoints_2d'], dtype=np.float32)
-    #     except:
-    #         pass
-    #     if hand_right is None:
-    #         hand_right = np.zeros((21, 3), dtype=np.float32)
-    #     elif hand_right.size == 21 * 3:
-    #         hand_right = hand_right.reshape(21, 3)
-    #     else:
-    #         hand_right = np.zeros((21, 3), dtype=np.float32)
-            
-    #     try:
-    #         face = np.array(j['people'][0]['face_keypoints_2d'], dtype=np.float32)
-    #     except:
-    #         pass
-    #     if face is None:
-    #         face = np.zeros((70, 3), dtype=np.float32)
-    #         error_pass = True
-    #     elif face.size == 70 * 3:
-    #         face = face.reshape(70, 3)
-    #     else:
-    #         face = np.zeros((70, 3), dtype=np.float32)
-    #         error_pass = True
-    # kpts = np.concatenate([pose_kpts, hand_left, hand_right, face], axis=0)  # (130, 3)
-    # def keypoints_to_heatmaps(keypoints, height, width, h2, w2, sigma=1):
-    #     heatmaps = np.zeros((keypoints.shape[0], height, width), dtype=np.uint8)  #130, 128, 256
-    #     for idx, (x, y, v) in enumerate(keypoints):
-    #         if v < 0.05:
-    #             continue
-    #         x = int(x*width/w2)
-    #         y = int(y*height/h2)
-    #         if x < 0 or y < 0 or x >= width or y >= height:
-    #             continue
-            
-    #         cv2.circle(heatmaps[idx], (x, y), sigma, 1, -1)
-    #     return torch.tensor(heatmaps, dtype=torch.uint8)  # [127, H, W]
-
-    # h, w = image_rgb.shape[:2]
-    # h2 = np.array(imgOut).shape[0]
-    # w2 = np.array(imgOut).shape[1]
-
-    # pose_tensor_heatmap = keypoints_to_heatmaps(kpts, h, w, h2, w2)*255
     out_pose = resize(torch.from_numpy(np.array(imgOut)).permute(2, 0, 1))  # [3, 128, 256]
     image_rgb_tensor = torch.from_numpy(image_rgb).permute(2, 0, 1)
     return image_rgb_tensor, out_pose
@@ -158,8 +79,8 @@ class Generator(nn.Module):
         self.out_up4 = self.up2x(ngf*2, ngf)
         self.out_conv1 = self.outconv(ngf, out_channels)
             
-        self.pos_encoding1_1 = PositionalEncoding2D(ngf*8, 32, 18)
-        self.pos_encoding1_2 = PositionalEncoding2D(ngf*8, 32, 18)
+        self.pos_encoding1_1 = PositionalEncoding2D(ngf*8, 22, 32)
+        self.pos_encoding1_2 = PositionalEncoding2D(ngf*8, 22, 32)
 
         self.transformer1 = nn.Transformer(
             d_model=ngf*8,
@@ -168,9 +89,10 @@ class Generator(nn.Module):
             num_encoder_layers=num_layers,
             batch_first=True
         )
+            
 
-        self.pos_encoding2_1 = PositionalEncoding2D(ngf*8, 32, 18)
-        self.pos_encoding2_2 = PositionalEncoding2D(ngf*8, 32, 18)
+        self.pos_encoding2_1 = PositionalEncoding2D(ngf*8, 22, 32)
+        self.pos_encoding2_2 = PositionalEncoding2D(ngf*8, 22, 32)
 
         self.transformer2 = nn.Transformer(
             d_model=ngf*8,
@@ -180,8 +102,9 @@ class Generator(nn.Module):
             batch_first=True
         )
 
-        self.pos_encoding3_1 = PositionalEncoding2D(ngf*8, 32, 18)
-        self.pos_encoding3_2 = PositionalEncoding2D(ngf*8, 32, 18)
+
+        self.pos_encoding3_1 = PositionalEncoding2D(ngf*8, 22, 32)
+        self.pos_encoding3_2 = PositionalEncoding2D(ngf*8, 22, 32)
 
         self.transformer3 = nn.Transformer(
             d_model=ngf*8,
@@ -191,8 +114,9 @@ class Generator(nn.Module):
             batch_first=True
         )
 
-        self.pos_encoding4_1 = PositionalEncoding2D(ngf*8, 32, 18)
-        self.pos_encoding4_2 = PositionalEncoding2D(ngf*8, 32, 18)
+
+        self.pos_encoding4_1 = PositionalEncoding2D(ngf*8, 22, 32)
+        self.pos_encoding4_2 = PositionalEncoding2D(ngf*8, 22, 32)
 
         self.transformer4 = nn.Transformer(
             d_model=ngf*8,
@@ -201,9 +125,8 @@ class Generator(nn.Module):
             num_encoder_layers=num_layers,
             batch_first=True
         )
-        
-        # self.linear1 = nn.Linear(model_dim, model_dim)
-        # self.linear2 = nn.Linear(model_dim, model_dim)
+     
+    
     def inconv(self, in_channels, out_channels):
         return nn.Sequential(
             conv3x3(in_channels, out_channels),
@@ -256,22 +179,24 @@ class Generator(nn.Module):
         tgt_seq = self.pos_encoding1_2(tgt_seq)
         out_seq1 = self.transformer1(out_seq, tgt_seq)
         out_seq1 = out_seq1 + src_seq
-
+    
         out_seq = self.pos_encoding2_1(out_seq1)
         tgt_seq = self.pos_encoding2_2(tgt_seq)
         out_seq2 = self.transformer2(out_seq, tgt_seq)
         out_seq2 = out_seq2 + out_seq1
+        
 
         out_seq = self.pos_encoding3_1(out_seq2)
         tgt_seq = self.pos_encoding3_2(tgt_seq)
         out_seq3 = self.transformer3(out_seq, tgt_seq)
         out_seq3 = out_seq3 + out_seq2
+      
 
         out_seq = self.pos_encoding4_1(out_seq3)
         tgt_seq = self.pos_encoding4_2(tgt_seq)
         out_seq4 = self.transformer4(out_seq, tgt_seq)
         out_seq4 = out_seq4 + out_seq3
-
+      
         out_feat = out_seq4.permute(0, 2, 1).reshape(src_feat4.shape)
         out_img = self.out_conv1(self.out_up4(self.out_up3(self.out_up2(out_feat))))
         return out_img
@@ -284,7 +209,7 @@ print(device)
 gen = torch.load('./pth/train8gen1100001.pt', weights_only=False)  
 
 model = DwposeDetector.from_pretrained_default()
-resize = torchvision.transforms.Resize((144, 256))
+resize = torchvision.transforms.Resize((256, 176))
 
 root = tk.Tk()
 root.title("Generated Images")
@@ -305,26 +230,26 @@ img_label6.grid(row=2, column=0)
     
 image_bgr = cv2.imread('00000.jpg')
 image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-image_rgb = cv2.resize(image_rgb, (256, 144))
+image_rgb = cv2.resize(image_rgb, (176, 256))
 image_rgb_tensor_origin, out_pose_origin = get_keypoints(image_rgb)
 
 cap = cv2.VideoCapture(0)
 #1920 x 1080      x : 1080 = 114 : 256     123120 = 256x  x = 480.93   640 : 480     x:480 = 114 : 256   54720  =256x   x = 213.75
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 256)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 144)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 176)
 if not cap.isOpened():
     print("Error: Could not open webcam.")
     exit()
 while True:
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
-    # frame = frame[0:480, 213: 213+214]
     
     if not ret:
         print("Error: Failed to capture frame.")
         break
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = cv2.resize(frame, (256, 144))
+    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    frame = cv2.resize(frame, (176, 256))
 
     image_rgb_tensor, out_pose = get_keypoints(frame)
     

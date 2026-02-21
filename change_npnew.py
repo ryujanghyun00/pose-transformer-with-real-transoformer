@@ -8,14 +8,14 @@ from dwpose import DwposeDetector
 import csv
 
 # DWpose 모델 초기화 (최초 실행 시 모델 자동 다운로드)
-#1024 576   512 288    256 144    128 72   16 9
+#1024 576   512 288    256 170    128 72   16 9
 model = DwposeDetector.from_pretrained_default()
-resize = torchvision.transforms.Resize((144, 256))
+resize = torchvision.transforms.Resize((256, 176))
 def get_keypoints(image_path):
     
     image_bgr = cv2.imread(image_path)
     image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-    image_rgb = cv2.resize(image_rgb, (256, 144))
+    image_rgb = cv2.resize(image_rgb, (176, 256))
 
     # DWpose로 keypoints 추출
     imgOut,j,source = model(image_rgb,
@@ -108,8 +108,8 @@ def get_keypoints(image_path):
     image_rgb_tensor = torch.from_numpy(image_rgb).permute(2, 0, 1)
     return image_rgb_tensor, pose_tensor_heatmap, error_pass, out_pose
 origin_image_tensors = torch.tensor([])
-pose_tensors = torch.tensor([])
-pose_tensors2 = torch.tensor([])
+# pose_tensors = torch.tensor([])
+# pose_tensors2 = torch.tensor([])
 output_image_tensors = torch.tensor([])
 out_pose_tensors  = torch.tensor([])
 out_pose2_tensors  = torch.tensor([])
@@ -186,26 +186,26 @@ with open('fasion-resize-pairs-train.csv', 'r') as csvfile:
             
             image_bgr = cv2.imread(image_path2)
             image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-            image_rgb = cv2.resize(image_rgb, (256, 144))
+            image_rgb = cv2.resize(image_rgb, (176, 256))
             image_rgb = torch.from_numpy(image_rgb).permute(2, 0, 1).unsqueeze(0)
             output_image_tensor, pose_tensor, error_pass, out_pose = get_keypoints(image_path)
             # print(pose_tensor.shape)
             output_image_tensor2, pose_tensor2, error_pass2, out_pose2 = get_keypoints(image_path2)
             # pose_img = (pose_tensor).max(dim=0)[0].cpu().numpy()  # [64, 128], 0~1
-            pose_tensor = (pose_tensor).type(torch.uint8)
-            pose_tensor2 = (pose_tensor2).type(torch.uint8)
-            if pose_tensor.shape == torch.Size([130, 144, 256]) and pose_tensor2.shape == torch.Size([130, 144, 256]) and output_image_tensor.shape == torch.Size([3, 144, 256]) and error_pass==False and error_pass2==False:
+            # pose_tensor = (pose_tensor).type(torch.uint8)
+            # pose_tensor2 = (pose_tensor2).type(torch.uint8)
+            if pose_tensor.shape == torch.Size([130, 256, 176]) and pose_tensor2.shape == torch.Size([130, 256, 176]) and output_image_tensor.shape == torch.Size([3, 256, 176]) and error_pass==False and error_pass2==False:
                 print(f'good {i_number}')
 
-                pose_tensor = pose_tensor.unsqueeze(0)
-                pose_tensor2 = pose_tensor2.unsqueeze(0)
+                # pose_tensor = pose_tensor.unsqueeze(0)
+                # pose_tensor2 = pose_tensor2.unsqueeze(0)
                 output_image_tensor = output_image_tensor.unsqueeze(0)
                 out_pose_tensor = out_pose.unsqueeze(0)
                 out_pose2_tensor = out_pose2.unsqueeze(0)
 
                 origin_image_tensors = torch.cat((origin_image_tensors, output_image_tensor2.unsqueeze(0)), dim=0) 
-                pose_tensors = torch.cat((pose_tensors, pose_tensor), dim=0) 
-                pose_tensors2 = torch.cat((pose_tensors2, pose_tensor2), dim=0) 
+                # pose_tensors = torch.cat((pose_tensors, pose_tensor), dim=0) 
+                # pose_tensors2 = torch.cat((pose_tensors2, pose_tensor2), dim=0) 
                 out_pose_tensors = torch.cat((out_pose_tensors, out_pose_tensor), dim=0) 
                 out_pose2_tensors = torch.cat((out_pose2_tensors, out_pose2_tensor), dim=0) 
                 output_image_tensors = torch.cat((output_image_tensors, output_image_tensor), dim=0) 
@@ -213,16 +213,16 @@ with open('fasion-resize-pairs-train.csv', 'r') as csvfile:
             else:
                 print(f'bad {i_number}')
             i_number += 1
-            if origin_image_tensors.shape[0] >= 20:
+            if origin_image_tensors.shape[0] >= 35:
                 np.save(f'./outdate/origin_img_{save_number}.npy', origin_image_tensors.numpy().astype(np.uint8))
                 np.save(f'./outdate/output_img_{save_number}.npy', output_image_tensors.numpy().astype(np.uint8))
-                np.save(f'./outdate/pose_{save_number}.npy', pose_tensors.numpy().astype(np.uint8))
-                np.save(f'./outdate/pose2_{save_number}.npy', pose_tensors2.numpy().astype(np.uint8))
+                # np.save(f'./outdate/pose_{save_number}.npy', pose_tensors.numpy().astype(np.uint8))
+                # np.save(f'./outdate/pose2_{save_number}.npy', pose_tensors2.numpy().astype(np.uint8))
                 np.save(f'./outdate/pose_img_{save_number}.npy', out_pose_tensors.numpy().astype(np.uint8))
                 np.save(f'./outdate/pose2_img_{save_number}.npy', out_pose2_tensors.numpy().astype(np.uint8))
                 origin_image_tensors = torch.tensor([])
-                pose_tensors = torch.tensor([])
-                pose_tensors2 = torch.tensor([])
+                # pose_tensors = torch.tensor([])
+                # pose_tensors2 = torch.tensor([])
                 output_image_tensors = torch.tensor([])
                 out_pose_tensors  = torch.tensor([])
                 out_pose2_tensors  = torch.tensor([])
@@ -230,13 +230,13 @@ with open('fasion-resize-pairs-train.csv', 'r') as csvfile:
    
 np.save(f'./outdate/origin_img_{save_number}.npy', origin_image_tensors.numpy().astype(np.uint8))
 np.save(f'./outdate/output_img_{save_number}.npy', output_image_tensors.numpy().astype(np.uint8))
-np.save(f'./outdate/pose_{save_number}.npy', pose_tensors.numpy().astype(np.uint8))
-np.save(f'./outdate/pose2_{save_number}.npy', pose_tensors2.numpy().astype(np.uint8))
+# np.save(f'./outdate/pose_{save_number}.npy', pose_tensors.numpy().astype(np.uint8))
+# np.save(f'./outdate/pose2_{save_number}.npy', pose_tensors2.numpy().astype(np.uint8))
 np.save(f'./outdate/pose_img_{save_number}.npy', out_pose_tensors.numpy().astype(np.uint8))
 np.save(f'./outdate/pose2_img_{save_number}.npy', out_pose2_tensors.numpy().astype(np.uint8))
 origin_image_tensors = torch.tensor([])
-pose_tensors = torch.tensor([])
-pose_tensors2 = torch.tensor([])
+# pose_tensors = torch.tensor([])
+# pose_tensors2 = torch.tensor([])
 output_image_tensors = torch.tensor([])
 out_pose_tensors  = torch.tensor([])
 out_pose2_tensors  = torch.tensor([])
