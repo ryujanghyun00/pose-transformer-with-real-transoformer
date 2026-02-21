@@ -13,7 +13,7 @@ https://www.paypal.com/ncp/payment/4YQLNPMPYN5CA
 
 모델 형태는 다음과 같습니다.
 
-<img width="512" height="144" alt="test" src="https://github.com/user-attachments/assets/e16bd1d6-fb85-4d94-85c5-dfafdf17b6f6" />
+<img width="512" height="144" alt="test" src="https://github.com/user-attachments/assets/f6a97c98-9e7b-4cf9-845f-b28dcde082f3" />
 
 
 사용 방법은 
